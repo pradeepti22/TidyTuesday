@@ -1,0 +1,77 @@
+---
+title: "Analyzing Car fuel efficiency"
+author: "Pradeepti"
+output: html_document
+---
+## TidyTuesday Practise exercise
+
+### Loading libraries and the requied dataset
+```{r loading libraries and the dataset}
+require(tidyverse, quietly = TRUE)
+theme_set(theme_light())
+
+df <- read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2019/2019-10-15/big_epa_cars.csv")
+
+```
+
+### Exploratory data analysis
+```{r exporing the df}
+glimpse(df)
+summary(df)
+
+#adding a column for electric vehicles, sorting the columns
+df_sorted <- df %>% 
+  mutate(uses_electricity = ifelse(highwayE > 0, "Electric", "Non-Electric")) 
+
+df_sorted <- df_sorted %>% 
+  select(sort(colnames(df_sorted)))
+
+```
+
+### Exploratory data Visualization
+```{r Initial plot}
+ggplot(data = df_sorted, 
+       aes(x = highway08, y = city08)) +
+  geom_point() +
+  geom_abline(color = "red") +
+  facet_wrap(~uses_electricity, scales = "free") +
+  expand_limits(x = 0, y = 0) +
+  labs(x= "Highway mpg", 
+       y = "City mpg",
+       title = "How does fuel efficiency differ between city and a Highway")
+
+```
+
+
+```{r exploring continued}
+df_sorted %>% 
+  select(city08, highway08, make, model, cylinders, displ, drive, engId, eng_dscr)
+
+df_sorted %>% 
+  filter(cityE ==0) %>% 
+  mutate(VClass = fct_lump(VClass, 8),
+         VClass = fct_reorder(VClass, city08)) %>%
+  ggplot(aes(VClass, city08)) +
+  geom_boxplot() +
+  coord_flip()
+
+```
+
+
+```{r}
+df_sorted %>% 
+  filter(cityE == 0) %>% 
+  mutate(drive = fct_reorder(drive, city08)) %>% 
+  ggplot(aes(drive, city08)) +
+  geom_boxplot() + 
+  coord_flip()
+
+```
+
+```{r}
+df_sorted %>% 
+  filter(cityE == 0) %>% 
+  ggplot(aes(displ, city08)) +
+  geom_point() +
+  expand_limits(x = 0, y = 0)
+```
